@@ -13,15 +13,15 @@ $ go get -u github.com/ryotarai/prometheus-query
 ```
 Usage of prometheus-query:
   -end string
-        End time (default to now)
+        End time (default "now")
   -format string
-        Format (default to json. available formats are json, tsv and csv) (default "json")
+        Format (available formats are json, tsv and csv) (default "json")
   -query string
         Query
   -server string
         Prometheus server URL like 'https://prometheus.example.com' (can be set by PROMETHEUS_SERVER environment variable) (default "")
   -start string
-        Start time (default to 1 hour ago)
+        Start time (default "1 hour ago")
   -step string
         Step (default "15s")
 ```
