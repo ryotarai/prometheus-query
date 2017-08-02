@@ -23,7 +23,7 @@ Usage of prometheus-query:
   -start string
         Start time (default to 1 hour ago)
   -step string
-        Step (default to 15s) (default "15s")
+        Step (default "15s")
 ```
 
 ```
