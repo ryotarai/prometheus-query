@@ -28,7 +28,7 @@ Usage of prometheus-query:
 
 ```
 $ PROMETHEUS_SERVER="http://your-prometheus.example.com"
-$ QUERY="100 * (1 - avg by(instance_type, availability_zone)(irate(node_cpu{mode='idle'}[5m])))" -start '1 minute ago' -format json"
+$ QUERY="100 * (1 - avg by(instance_type, availability_zone)(irate(node_cpu{mode='idle'}[5m])))"
 ```
 
 Output format defaults to JSON:
