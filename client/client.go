@@ -61,7 +61,7 @@ func (c *Client) QueryRange(query string, start time.Time, end time.Time, step t
 		url.QueryEscape(query),
 		url.QueryEscape(fmt.Sprintf("%d", start.Unix())),
 		url.QueryEscape(fmt.Sprintf("%d", end.Unix())),
-		url.QueryEscape(step.String()),
+		url.QueryEscape(fmt.Sprintf("%ds", int(step.Seconds()))),
 	))
 	if err != nil {
 		return nil, err
