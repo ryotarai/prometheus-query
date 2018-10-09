@@ -1,8 +1,10 @@
 package prometheus
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -11,7 +13,9 @@ import (
 )
 
 type Client struct {
-	Server *url.URL
+	Server  *url.URL
+	Auth    string
+	hasAuth bool
 }
 
 func NewClient(addr string) (*Client, error) {
@@ -23,6 +27,24 @@ func NewClient(addr string) (*Client, error) {
 	return &Client{
 		Server: u,
 	}, nil
+}
+
+func NewAuthClient(addr, user, password string) (*Client, error) {
+	u, err := url.Parse(addr)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Client{
+		Server:  u,
+		Auth:    basicAuth(user, password),
+		hasAuth: true,
+	}, nil
+}
+
+func basicAuth(username, password string) string {
+	auth := username + ":" + password
+	return base64.StdEncoding.EncodeToString([]byte(auth))
 }
 
 type QueryRangeResponse struct {
@@ -68,19 +90,36 @@ func (c *Client) QueryRange(query string, start time.Time, end time.Time, step t
 	}
 
 	u = c.Server.ResolveReference(u)
-	r, err := http.Get(u.String())
+
+	req, err := http.NewRequest("GET", u.String(), nil)
+
+	if c.hasAuth {
+		req.Header.Add("Authorization", "Basic "+c.Auth)
+	}
+
 	if err != nil {
 		return nil, err
 	}
-	defer r.Body.Close()
-	b, err := ioutil.ReadAll(r.Body)
 
-	if 400 <= r.StatusCode {
-		return nil, fmt.Errorf("error response: %s", string(b))
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		if err == io.EOF {
+			return &QueryRangeResponse{}, nil
+		}
+		return nil, err
+	}
+
+	if 400 <= res.StatusCode {
+		return nil, fmt.Errorf("error response: %s", string(body))
 	}
 
 	resp := &QueryRangeResponse{}
-	err = json.Unmarshal(b, resp)
+	err = json.Unmarshal(body, resp)
 	if err != nil {
 		return nil, err
 	}
